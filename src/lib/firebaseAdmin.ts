@@ -53,6 +53,23 @@ function initializeFirebaseAdmin() {
   }
 
   if (projectId && clientEmail && privateKey) {
+    // Validate private key format before attempting initialization
+    const hasBeginHeader = privateKey.includes('-----BEGIN PRIVATE KEY-----')
+    const hasEndFooter = privateKey.includes('-----END PRIVATE KEY-----')
+    const keyLength = privateKey.length
+    
+    console.log('[Firebase Admin] Validating private key format...')
+    console.log('[Firebase Admin] Has BEGIN header:', hasBeginHeader)
+    console.log('[Firebase Admin] Has END footer:', hasEndFooter)
+    console.log('[Firebase Admin] Key length:', keyLength)
+    console.log('[Firebase Admin] First 50 chars:', privateKey.substring(0, 50))
+    console.log('[Firebase Admin] Last 50 chars:', privateKey.substring(Math.max(0, keyLength - 50)))
+    
+    if (!hasBeginHeader || !hasEndFooter) {
+      console.error('[Firebase Admin] Private key format validation failed!')
+      console.error('[Firebase Admin] Key must start with "-----BEGIN PRIVATE KEY-----" and end with "-----END PRIVATE KEY-----"')
+    }
+    
     try {
       adminApp = initializeApp({
         credential: cert({
@@ -64,9 +81,11 @@ function initializeFirebaseAdmin() {
       })
       adminAuth = getAuth(adminApp)
       adminDb = getFirestore(adminApp)
-      console.log('[Firebase Admin] Initialized successfully with environment variables')
+      console.log('[Firebase Admin] ✓ Initialized successfully with environment variables')
     } catch (error: any) {
-      console.error('[Firebase Admin] Failed to initialize with cert:', error.message)
+      console.error('[Firebase Admin] ✗ Failed to initialize with cert:', error.message)
+      console.error('[Firebase Admin] Error code:', error.code)
+      console.error('[Firebase Admin] Error details:', error.details)
       // Fallback to default credentials
       try {
         adminApp = initializeApp({
