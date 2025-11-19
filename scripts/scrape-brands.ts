@@ -195,7 +195,7 @@ async function extractLogo($: cheerio.CheerioAPI, baseUrl: string, selectors: st
 async function extractProducts($: cheerio.CheerioAPI, baseUrl: string, brandName: string, platform: string = 'shopify'): Promise<ProductData[]> {
   const products: ProductData[] = []
   
-  let productElements: cheerio.Cheerio<cheerio.Element> = $()
+  let productElements: cheerio.Cheerio<any> = $()
   
   if (platform === 'squarespace') {
     // Squarespace selectors
