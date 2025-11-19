@@ -7,7 +7,10 @@ let adminAuth: Auth | null = null
 let adminDb: Firestore | null = null
 
 function initializeFirebaseAdmin() {
+  console.log('[Firebase Admin] Starting initialization...')
+  
   if (getApps().length > 0) {
+    console.log('[Firebase Admin] App already initialized, reusing existing app')
     adminApp = getApps()[0]
     adminAuth = getAuth(adminApp)
     adminDb = getFirestore(adminApp)
@@ -18,23 +21,29 @@ function initializeFirebaseAdmin() {
   const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL
   let privateKey = process.env.FIREBASE_PRIVATE_KEY
+  
+  console.log('[Firebase Admin] Environment check:')
+  console.log('[Firebase Admin] - Project ID:', projectId ? '✓ Set' : '✗ Missing')
+  console.log('[Firebase Admin] - Client Email:', clientEmail ? '✓ Set' : '✗ Missing')
+  console.log('[Firebase Admin] - Private Key:', privateKey ? `✓ Set (${privateKey.length} chars)` : '✗ Missing')
 
   // Handle private key formatting - Vercel stores it with escaped newlines
   if (privateKey) {
+    const originalLength = privateKey.length
+    console.log('[Firebase Admin] Processing private key (original length:', originalLength, ')')
+    
     // Trim whitespace
     privateKey = privateKey.trim()
     
     // Replace escaped newlines with actual newlines (handles Vercel's format)
+    // This handles both \n (single escape) and \\n (double escape)
     privateKey = privateKey.replace(/\\n/g, '\n')
-    
-    // Also handle double-escaped newlines (sometimes happens)
     privateKey = privateKey.replace(/\\\\n/g, '\n')
-    
-    // Handle literal \n strings (if stored as string literal)
-    privateKey = privateKey.replace(/\\n/g, '\n')
     
     // Remove any quotes that might wrap the key
     privateKey = privateKey.replace(/^["']|["']$/g, '')
+    
+    console.log('[Firebase Admin] After processing (new length:', privateKey.length, ')')
     
     // Ensure it starts and ends correctly
     if (!privateKey.startsWith('-----BEGIN')) {
