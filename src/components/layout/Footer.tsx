@@ -13,17 +13,17 @@ export function Footer() {
 
         {/* Right: Links + Copyright */}
         <div className="flex flex-col items-center sm:items-end gap-1 sm:gap-1.5">
-          <nav className="flex items-center gap-4 sm:gap-5">
-            <Link href="/about" className="text-[0.7rem] tracking-[0.18em] uppercase text-[#E5E1DA] hover:text-[#F5F2EB] transition-colors" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
+          <nav className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4 sm:gap-5">
+            <Link href="/about" className="text-[0.7rem] tracking-[0.18em] uppercase text-[#E5E1DA] hover:text-[#F5F2EB] transition-colors whitespace-nowrap" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
               About
             </Link>
-            <Link href="/dashboard" className="text-[0.7rem] tracking-[0.18em] uppercase text-[#E5E1DA] hover:text-[#F5F2EB] transition-colors" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
+            <Link href="/dashboard" className="text-[0.7rem] tracking-[0.18em] uppercase text-[#E5E1DA] hover:text-[#F5F2EB] transition-colors whitespace-nowrap" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
               For Sellers
             </Link>
-            <Link href="/contact" className="text-[0.7rem] tracking-[0.18em] uppercase text-[#E5E1DA] hover:text-[#F5F2EB] transition-colors" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
+            <Link href="/contact" className="text-[0.7rem] tracking-[0.18em] uppercase text-[#E5E1DA] hover:text-[#F5F2EB] transition-colors whitespace-nowrap" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
               Contact
             </Link>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-[0.7rem] tracking-[0.18em] uppercase text-[#E5E1DA] hover:text-[#F5F2EB] transition-colors" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-[0.7rem] tracking-[0.18em] uppercase text-[#E5E1DA] hover:text-[#F5F2EB] transition-colors whitespace-nowrap" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
               Instagram
             </a>
           </nav>
