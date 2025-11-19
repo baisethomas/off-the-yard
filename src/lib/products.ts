@@ -23,6 +23,14 @@ export interface Brand {
   logoUrl: string
   heroImageUrl: string
   verified: boolean
+  approved?: boolean
+  chapter?: string
+  ownerUid?: string | null
+  socials?: {
+    instagram?: string
+    website?: string
+    [key: string]: any
+  }
 }
 
 export async function getApprovedProducts(limit: number = 12): Promise<(Product & { brandName?: string })[]> {

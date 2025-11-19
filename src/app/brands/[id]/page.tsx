@@ -8,7 +8,7 @@ export const revalidate = 60
 export default async function BrandPage({ params }: { params: { id: string } }) {
   const brand = await getBrandById(params.id)
 
-  if (!brand || !brand.approved) {
+  if (!brand || (brand.approved !== undefined && !brand.approved)) {
     notFound()
   }
 
