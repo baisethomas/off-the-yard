@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-oswald: 'Oswald', system-ui, -apple-system, sans-serif;
+  --font-ibm-plex-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+@layer components {
+  .input-dark {
+    @apply w-full px-3 py-2 rounded-md bg-[#0D0D0D] border border-[#77736E] text-xs text-[#F1EFEA] placeholder:text-[#F1EFEA]/40;
+  }
+}
+

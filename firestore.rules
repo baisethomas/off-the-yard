@@ -1,0 +1,119 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper function to get user role (returns 'user' as default if not found)
+    function getUserRole() {
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return userDoc != null && userDoc.data != null ? userDoc.data.role : 'user';
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Users can read any user document (for public profiles)
+      allow read: if isAuthenticated();
+      
+      // Users can create their own user document on sign-up
+      allow create: if isAuthenticated() 
+        && request.auth.uid == userId
+        && request.resource.data.uid == userId
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role == 'user';
+      
+      // Users can update their own document (but not change their role)
+      allow update: if isOwner(userId)
+        && request.resource.data.role == resource.data.role;
+      
+      // Admins can update any user document (including role changes)
+      allow update: if isAuthenticated() 
+        && getUserRole() == 'admin';
+    }
+    
+    // Brands collection
+    match /brands/{brandId} {
+      // Anyone can read approved/verified brands
+      allow read: if resource.data.verified == true;
+      
+      // Sellers can read their own brands
+      allow read: if isAuthenticated() && resource.data.ownerUid == request.auth.uid;
+      
+      // Sellers can create brands (they'll be unverified initially)
+      allow create: if isAuthenticated() 
+        && getUserRole() == 'seller'
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.verified == false;
+      
+      // Sellers can update their own brands (but can't change verified status)
+      allow update: if isAuthenticated() 
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.verified == resource.data.verified;
+      
+      // Admins can update any brand (including verification)
+      allow update: if isAuthenticated() && getUserRole() == 'admin';
+      
+      // Admins can delete brands
+      allow delete: if isAuthenticated() && getUserRole() == 'admin';
+    }
+    
+    // Products collection
+    match /products/{productId} {
+      // Anyone can read approved products
+      allow read: if resource.data.approved == true;
+      
+      // Sellers can read their own products
+      allow read: if isAuthenticated() 
+        && resource.data.brandId != null
+        && exists(/databases/$(database)/documents/brands/$(resource.data.brandId))
+        && get(/databases/$(database)/documents/brands/$(resource.data.brandId)).data.ownerUid == request.auth.uid;
+      
+      // Sellers can create products (they'll be unapproved initially)
+      allow create: if isAuthenticated() 
+        && getUserRole() == 'seller'
+        && request.resource.data.approved == false
+        && exists(/databases/$(database)/documents/brands/$(request.resource.data.brandId))
+        && get(/databases/$(database)/documents/brands/$(request.resource.data.brandId)).data.ownerUid == request.auth.uid;
+      
+      // Sellers can update their own products (but can't change approved status)
+      allow update: if isAuthenticated() 
+        && resource.data.brandId != null
+        && exists(/databases/$(database)/documents/brands/$(resource.data.brandId))
+        && get(/databases/$(database)/documents/brands/$(resource.data.brandId)).data.ownerUid == request.auth.uid
+        && request.resource.data.approved == resource.data.approved;
+      
+      // Admins can update any product (including approval)
+      allow update: if isAuthenticated() && getUserRole() == 'admin';
+      
+      // Admins can delete products
+      allow delete: if isAuthenticated() && getUserRole() == 'admin';
+    }
+    
+    // Collections collection
+    match /collections/{collectionId} {
+      // Anyone can read collections
+      allow read: if true;
+      
+      // Only admins can create/update/delete collections
+      allow write: if isAuthenticated() && getUserRole() == 'admin';
+    }
+    
+    // Stories collection
+    match /stories/{storyId} {
+      // Anyone can read published stories
+      allow read: if resource.data.publishedAt != null;
+      
+      // Only admins can create/update/delete stories
+      allow write: if isAuthenticated() && getUserRole() == 'admin';
+    }
+  }
+}
+
