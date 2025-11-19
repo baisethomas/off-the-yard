@@ -1,7 +1,13 @@
 import { Product } from '@/lib/products'
 
+// Flexible product type for display - only requires fields actually used by ProductCard
+type ProductDisplay = Pick<Product, 'id' | 'title' | 'imageUrl' | 'externalUrl'> & {
+  brandName?: string
+  dropNumber?: number | null
+}
+
 interface ProductCardProps {
-  product: Product & { brandName?: string }
+  product: ProductDisplay | Product
 }
 
 export function ProductCard({ product }: ProductCardProps) {
