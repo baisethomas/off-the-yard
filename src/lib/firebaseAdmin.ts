@@ -38,3 +38,7 @@ if (getApps().length === 0) {
 
 export { adminAuth, adminDb }
 
+export async function getAdminDb(): Promise<Firestore | null> {
+  return adminDb || null
+}
+
