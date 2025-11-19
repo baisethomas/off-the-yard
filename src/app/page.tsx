@@ -28,7 +28,7 @@ export default function HomePage() {
 
                 {/* CTAs */}
                 <div className="flex flex-wrap items-center gap-4 pt-2">
-                  <Link href="/collections" className="inline-flex items-center justify-center rounded-none border border-[#1A1A1A] bg-[#1A1A1A] text-[#F5F2EB] text-sm sm:text-base font-normal tracking-[0.22em] uppercase py-2.5 sm:py-3 px-6 sm:px-8 hover:bg-transparent hover:text-[#1A1A1A] transition-colors" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
+                  <Link href="/shop" className="inline-flex items-center justify-center rounded-none border border-[#1A1A1A] bg-[#1A1A1A] text-[#F5F2EB] text-sm sm:text-base font-normal tracking-[0.22em] uppercase py-2.5 sm:py-3 px-6 sm:px-8 hover:bg-transparent hover:text-[#1A1A1A] transition-colors" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
                     Shop drops
                   </Link>
                   <Link href="/brands" className="inline-flex items-center justify-center rounded-none border border-transparent text-sm sm:text-base font-normal tracking-[0.22em] uppercase text-[#4C4A45] hover:text-[#1A1A1A] transition-colors" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
