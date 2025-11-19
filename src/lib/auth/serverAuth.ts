@@ -5,6 +5,11 @@ import { Timestamp } from 'firebase-admin/firestore'
 
 export async function verifyToken(token: string): Promise<User | null> {
   try {
+    if (!adminAuth || !adminDb) {
+      console.error('Firebase Admin not initialized')
+      return null
+    }
+    
     const decodedToken = await adminAuth.verifyIdToken(token)
     
     // Fetch user document from Firestore to get role
@@ -67,6 +72,10 @@ export type AuthedAdminContext = {
 }
 
 export async function requireAdmin(authorizationHeader?: string | null): Promise<AuthedAdminContext> {
+  if (!adminAuth || !adminDb) {
+    throw new Error('Firebase Admin not initialized')
+  }
+  
   if (!authorizationHeader?.startsWith('Bearer ')) {
     throw new Error('Missing or invalid Authorization header')
   }
