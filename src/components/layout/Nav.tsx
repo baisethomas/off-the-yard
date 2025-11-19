@@ -18,7 +18,7 @@ export function Nav() {
 
         {/* Center Nav */}
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="/shop" className="text-xs sm:text-sm font-normal tracking-tight text-[#3D3D3D] hover:text-[#1A1A1A] transition-colors" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
+          <Link href="/collections" className="text-xs sm:text-sm font-normal tracking-tight text-[#3D3D3D] hover:text-[#1A1A1A] transition-colors" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
             Shop
           </Link>
           <Link href="/collections" className="sm:text-sm hover:text-[#1A1A1A] transition-colors cursor-pointer text-xs font-normal text-[#3D3D3D] tracking-tight" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>

@@ -1,7 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth'
+import { 
+  User as FirebaseUser, 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup
+} from 'firebase/auth'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '@/lib/firebaseClient'
 import { User } from '@/types/user'
@@ -17,12 +25,31 @@ export function useAuth() {
       
       if (firebaseUser) {
         // Set auth token in cookie for server-side access
-        const token = await firebaseUser.getIdToken()
-        document.cookie = `auth-token=${token}; path=/; max-age=3600; SameSite=Lax`
+        try {
+          const token = await firebaseUser.getIdToken()
+          document.cookie = `auth-token=${token}; path=/; max-age=3600; SameSite=Lax`
+        } catch (error) {
+          console.error('Error getting auth token:', error)
+        }
         
-        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
-        if (userDoc.exists()) {
-          setUser(userDoc.data() as User)
+        // Fetch or create user document from Firestore
+        try {
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
+          if (userDoc.exists()) {
+            setUser(userDoc.data() as User)
+          } else {
+            // User document doesn't exist, create it (for Google sign-in or new users)
+            const newUser: User = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || '',
+              role: 'user',
+              createdAt: serverTimestamp() as any,
+            }
+            await setDoc(doc(db, 'users', firebaseUser.uid), newUser)
+            setUser(newUser)
+          }
+        } catch (error) {
+          console.error('Error fetching/creating user document:', error)
         }
       } else {
         // Clear auth token cookie on logout
@@ -57,6 +84,31 @@ export function useAuth() {
     return userCredential
   }
 
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider()
+    // Add scopes if needed
+    provider.addScope('profile')
+    provider.addScope('email')
+    
+    const userCredential = await signInWithPopup(auth, provider)
+    
+    // Check if user document exists, create if not
+    const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid))
+    if (!userDoc.exists()) {
+      const newUser: User = {
+        uid: userCredential.user.uid,
+        email: userCredential.user.email || '',
+        role: 'user',
+        createdAt: serverTimestamp() as any,
+      }
+      await setDoc(doc(db, 'users', userCredential.user.uid), newUser)
+    }
+    
+    const token = await userCredential.user.getIdToken()
+    document.cookie = `auth-token=${token}; path=/; max-age=3600; SameSite=Lax`
+    return userCredential
+  }
+
   const logout = async () => {
     await signOut(auth)
     document.cookie = 'auth-token=; path=/; max-age=0'
@@ -69,6 +121,7 @@ export function useAuth() {
     loading,
     signIn,
     signUp,
+    signInWithGoogle,
     logout,
   }
 }

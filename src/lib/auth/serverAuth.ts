@@ -1,18 +1,10 @@
-import { getAdminAuth, getAdminDb } from '../firebaseAdmin'
+import { adminAuth, adminDb } from '../firebaseAdmin'
 import { cookies, headers } from 'next/headers'
 import { User } from '@/types/user'
 import { Timestamp } from 'firebase-admin/firestore'
 
 export async function verifyToken(token: string): Promise<User | null> {
   try {
-    const adminAuth = await getAdminAuth()
-    const adminDb = await getAdminDb()
-    
-    if (!adminAuth || !adminDb) {
-      console.warn('Firebase Admin not initialized')
-      return null
-    }
-    
     const decodedToken = await adminAuth.verifyIdToken(token)
     
     // Fetch user document from Firestore to get role
@@ -75,13 +67,6 @@ export type AuthedAdminContext = {
 }
 
 export async function requireAdmin(authorizationHeader?: string | null): Promise<AuthedAdminContext> {
-  const adminAuth = await getAdminAuth()
-  const adminDb = await getAdminDb()
-  
-  if (!adminAuth || !adminDb) {
-    throw new Error('Firebase Admin not initialized')
-  }
-  
   if (!authorizationHeader?.startsWith('Bearer ')) {
     throw new Error('Missing or invalid Authorization header')
   }

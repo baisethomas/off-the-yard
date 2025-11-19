@@ -69,7 +69,7 @@ export default function StoriesPage() {
                         Interview
                       </span>
                       <h3 className="text-base sm:text-lg font-medium tracking-tight text-[#1A1A1A]" style={{ fontFamily: "'Oswald', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-                        "We wanted the yard to feel like a studio": Probate Club on varsity discipline
+                        &quot;We wanted the yard to feel like a studio&quot;: Probate Club on varsity discipline
                       </h3>
                       <p className="text-sm sm:text-base text-[#4C4A45] max-w-xl" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
                         The founders of Probate Club break down their approach to cut, color, and carrying line-crossing energy into everyday outerwear.
@@ -97,7 +97,7 @@ export default function StoriesPage() {
                         Drop Recap
                       </span>
                       <h3 className="text-base sm:text-lg font-medium tracking-tight text-[#1A1A1A]" style={{ fontFamily: "'Oswald', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-                        Inside Capsule 014: the "Line Crossing" fleece set that sold out in hours
+                        Inside Capsule 014: the &quot;Line Crossing&quot; fleece set that sold out in hours
                       </h3>
                       <p className="text-sm sm:text-base text-[#4C4A45] max-w-xl" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
                         Notes from the drop, what sizes moved first, and how Yard Gods is thinking about restocks without killing the moment.

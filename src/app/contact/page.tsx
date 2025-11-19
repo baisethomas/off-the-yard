@@ -35,7 +35,7 @@ export default function ContactPage() {
             Get in Touch
           </h1>
           <p className="text-base sm:text-lg text-[#4C4A45]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-            Have a question? Want to feature your brand? We'd love to hear from you.
+            Have a question? Want to feature your brand? We&apos;d love to hear from you.
           </p>
           <div className="h-px w-full bg-[#D4CFC3]"></div>
         </section>
@@ -107,7 +107,7 @@ export default function ContactPage() {
 
             {status === 'success' && (
               <div className="bg-green-50 border border-green-200 text-green-800 p-4 text-sm" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                Thank you for your message. We'll get back to you soon.
+                Thank you for your message. We&apos;ll get back to you soon.
               </div>
             )}
 
