@@ -21,14 +21,34 @@ function initializeFirebaseAdmin() {
 
   // Handle private key formatting - Vercel stores it with escaped newlines
   if (privateKey) {
-    // Replace escaped newlines with actual newlines
+    // Trim whitespace
+    privateKey = privateKey.trim()
+    
+    // Replace escaped newlines with actual newlines (handles Vercel's format)
     privateKey = privateKey.replace(/\\n/g, '\n')
+    
     // Also handle double-escaped newlines (sometimes happens)
     privateKey = privateKey.replace(/\\\\n/g, '\n')
+    
+    // Handle literal \n strings (if stored as string literal)
+    privateKey = privateKey.replace(/\\n/g, '\n')
+    
+    // Remove any quotes that might wrap the key
+    privateKey = privateKey.replace(/^["']|["']$/g, '')
+    
     // Ensure it starts and ends correctly
     if (!privateKey.startsWith('-----BEGIN')) {
-      // If it's missing the header, it might be base64 encoded or malformed
-      console.warn('[Firebase Admin] Private key format may be incorrect')
+      console.error('[Firebase Admin] Private key format is incorrect - missing BEGIN header')
+      console.error('[Firebase Admin] Private key starts with:', privateKey.substring(0, 50))
+    }
+    
+    if (!privateKey.endsWith('-----END PRIVATE KEY-----')) {
+      // Try to fix if it's missing the newline before END
+      if (privateKey.includes('-----END PRIVATE KEY-----')) {
+        privateKey = privateKey.replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----\n')
+      } else {
+        console.error('[Firebase Admin] Private key format is incorrect - missing END footer')
+      }
     }
   }
 

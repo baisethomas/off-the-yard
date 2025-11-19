@@ -2,6 +2,9 @@ import Link from 'next/link'
 import { ProductCard } from '@/components/ui/ProductCard'
 import { getApprovedProducts, getVerifiedBrands } from '@/lib/products'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 60
+
 export default async function HomePage() {
   // Fetch products and brands from Firestore
   let products: Awaited<ReturnType<typeof getApprovedProducts>> = []
