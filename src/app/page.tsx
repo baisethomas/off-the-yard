@@ -1,6 +1,25 @@
 import Link from 'next/link'
+import { ProductCard } from '@/components/ui/ProductCard'
+import { getApprovedProducts, getVerifiedBrands } from '@/lib/products'
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Fetch products and brands from Firestore
+  let products: Awaited<ReturnType<typeof getApprovedProducts>> = []
+  let brands: Awaited<ReturnType<typeof getVerifiedBrands>> = []
+
+  try {
+    // Fetch products and brands in parallel
+    const [productsResult, brandsResult] = await Promise.all([
+      getApprovedProducts(8),
+      getVerifiedBrands(4),
+    ])
+    products = productsResult
+    brands = brandsResult
+    console.log(`[HomePage] Fetched ${products.length} products and ${brands.length} brands`)
+  } catch (error) {
+    console.error('[HomePage] Error fetching data:', error)
+    // Continue with empty arrays - will show fallback content
+  }
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0">
       {/* Hero */}
@@ -123,130 +142,25 @@ export default function HomePage() {
 
         {/* Product Card Grid */}
         <div className="grid gap-6 sm:gap-7 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {/* Product Card Component 1 */}
+          {products.length > 0 ? (
+            products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))
+          ) : (
+            // Fallback placeholder cards if no products
+            <>
               <article className="group bg-[#EDE7DE] rounded-none overflow-hidden border border-[#D4CFC3] transition-colors duration-300">
                 <div className="relative overflow-hidden rounded-b-none">
                   <div className="aspect-[3/4] bg-gradient-to-b from-[#D4CEC0] via-[#E5E1DA] to-[#F5F2EB]">
-                    <div className="h-full w-full transform transition-transform duration-300 group-hover:scale-[1.02]">
-                      <div className="h-full w-full flex items-end justify-between p-4">
-                        <span className="text-[0.7rem] tracking-[0.26em] uppercase text-[#7F786A] bg-[#E5E1DA]/80 rounded-none py-1 px-2.5" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
-                          New
-                        </span>
-                      </div>
+                    <div className="h-full w-full flex items-center justify-center">
+                      <p className="text-sm text-[#7F786A]">No products yet</p>
                     </div>
                   </div>
                 </div>
-                <div className="p-4 sm:p-5 space-y-2">
-                  <h3 className="text-sm sm:text-base font-medium tracking-tight text-[#1A1A1A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                    Line Crossing heavyweight hoodie
-                  </h3>
-                  <p className="text-sm text-[#4C4A45]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                    Yard Gods Studio
-                  </p>
-                  <div className="flex items-center justify-between text-[0.7rem] text-[#7F786A] pt-3">
-                    <span className="tracking-[0.26em] uppercase" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
-                      Capsule 014
-                    </span>
-                    <button className="ml-2 text-[0.65rem] tracking-[0.26em] uppercase text-[#7F786A] group-hover:text-[#1A1A1A] transition-colors" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
-                      Link out
-                    </button>
-                  </div>
-                </div>
               </article>
-
-              {/* Product Card Component 2 */}
-              <article className="group bg-[#EDE7DE] rounded-none overflow-hidden border border-[#D4CFC3] transition-colors duration-300">
-                <div className="relative overflow-hidden rounded-b-none">
-                  <div className="aspect-[3/4] bg-gradient-to-b from-[#D8D1C5] via-[#E5E1DA] to-[#F5F2EB]">
-                    <div className="h-full w-full transform transition-transform duration-300 group-hover:scale-[1.02]">
-                      <div className="h-full w-full flex items-end justify-between p-4">
-                        <span className="text-[0.7rem] tracking-[0.26em] uppercase text-[#7F786A] bg-[#E5E1DA]/80 rounded-none py-1 px-2.5" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
-                          Featured
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-4 sm:p-5 space-y-2">
-                  <h3 className="text-sm sm:text-base font-medium tracking-tight text-[#1A1A1A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                    Yard line varsity jacket
-                  </h3>
-                  <p className="text-sm text-[#4C4A45]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                    Probate Club
-                  </p>
-                  <div className="flex items-center justify-between text-[0.7rem] text-[#7F786A] pt-3">
-                    <span className="tracking-[0.26em] uppercase" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
-                      Capsule 013
-                    </span>
-                    <button className="ml-2 text-[0.65rem] tracking-[0.26em] uppercase text-[#7F786A] group-hover:text-[#1A1A1A] transition-colors" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
-                      Link out
-                    </button>
-                  </div>
-                </div>
-              </article>
-
-              {/* Product Card Component 3 */}
-              <article className="group bg-[#EDE7DE] rounded-none overflow-hidden border border-[#D4CFC3] transition-colors duration-300">
-                <div className="relative overflow-hidden rounded-b-none">
-                  <div className="aspect-[3/4] bg-gradient-to-b from-[#D0C7B7] via-[#E5E1DA] to-[#F5F2EB]">
-                    <div className="h-full w-full transform transition-transform duration-300 group-hover:scale-[1.02]">
-                      <div className="h-full w-full flex items-end justify-between p-4">
-                        <span className="text-[0.7rem] tracking-[0.26em] uppercase text-[#7F786A] bg-[#E5E1DA]/80 rounded-none py-1 px-2.5" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
-                          Capsule
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-4 sm:p-5 space-y-2">
-                  <h3 className="text-sm sm:text-base font-medium tracking-tight text-[#1A1A1A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                    Yard crest oversized tee
-                  </h3>
-                  <p className="text-sm text-[#4C4A45]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                    Bruhz Archive
-                  </p>
-                  <div className="flex items-center justify-between text-[0.7rem] text-[#7F786A] pt-3">
-                    <span className="tracking-[0.26em] uppercase" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
-                      Capsule 012
-                    </span>
-                    <button className="ml-2 text-[0.65rem] tracking-[0.26em] uppercase text-[#7F786A] group-hover:text-[#1A1A1A] transition-colors" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
-                      Link out
-                    </button>
-                  </div>
-                </div>
-              </article>
-
-              {/* Product Card Component 4 */}
-              <article className="group bg-[#EDE7DE] rounded-none overflow-hidden border border-[#D4CFC3] transition-colors duration-300">
-                <div className="relative overflow-hidden rounded-b-none">
-                  <div className="aspect-[3/4] bg-gradient-to-b from-[#D6CEC1] via-[#E5E1DA] to-[#F5F2EB]">
-                    <div className="h-full w-full transform transition-transform duration-300 group-hover:scale-[1.02]">
-                      <div className="h-full w-full flex items-end justify-between p-4">
-                        <span className="text-[0.7rem] tracking-[0.26em] uppercase text-[#7F786A] bg-[#E5E1DA]/80 rounded-none py-1 px-2.5" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
-                          Limited
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-4 sm:p-5 space-y-2">
-                  <h3 className="text-sm sm:text-base font-medium tracking-tight text-[#1A1A1A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                    Midnight track pant
-                  </h3>
-                  <p className="text-sm text-[#4C4A45]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                    Yard Runners
-                  </p>
-                  <div className="flex items-center justify-between text-[0.7rem] text-[#7F786A] pt-3">
-                    <span className="tracking-[0.26em] uppercase" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
-                      Capsule 011
-                    </span>
-                    <button className="ml-2 text-[0.65rem] tracking-[0.26em] uppercase text-[#7F786A] group-hover:text-[#1A1A1A] transition-colors" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
-                      Link out
-                    </button>
-                  </div>
-                </div>
-              </article>
-            </div>
+            </>
+          )}
+        </div>
       </section>
 
       {/* Featured Brands */}
@@ -263,61 +177,45 @@ export default function HomePage() {
         <div className="relative">
           {/* Horizontal Scroll */}
           <div className="overflow-x-auto">
-                <div className="flex gap-6 sm:gap-8 pr-6 sm:pr-10">
-                  {/* Brand Card */}
+            <div className="flex gap-6 sm:gap-8 pr-6 sm:pr-10">
+              {brands.length > 0 ? (
+                brands.map((brand) => (
+                  <Link key={brand.id} href={`/brands/${brand.id}`} className="min-w-[12rem] sm:min-w-[14rem]">
+                    <div className="aspect-square sm:aspect-[4/3] bg-gradient-to-br from-[#D4CEC0] via-[#E5E1DA] to-[#F5F2EB] border border-[#D4CFC3] relative overflow-hidden">
+                      {brand.logoUrl && (
+                        <img
+                          src={brand.logoUrl}
+                          alt={brand.name}
+                          className="absolute inset-0 w-full h-full object-contain p-4"
+                        />
+                      )}
+                    </div>
+                    <div className="pt-4 space-y-1.5">
+                      <h3 className="text-sm sm:text-base font-medium tracking-tight uppercase text-[#1A1A1A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
+                        {brand.name}
+                      </h3>
+                      <p className="text-xs text-[#7F786A] line-clamp-2" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
+                        {brand.bio || 'Que-owned streetwear'}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                // Fallback placeholder brands
+                <>
                   <Link href="/brands" className="min-w-[12rem] sm:min-w-[14rem]">
                     <div className="aspect-square sm:aspect-[4/3] bg-gradient-to-br from-[#D4CEC0] via-[#E5E1DA] to-[#F5F2EB] border border-[#D4CFC3]"></div>
                     <div className="pt-4 space-y-1.5">
                       <h3 className="text-sm sm:text-base font-medium tracking-tight uppercase text-[#1A1A1A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                        Yard Gods Studio
+                        Coming Soon
                       </h3>
-                      <p className="text-xs text-[#7F786A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                        Que-owned fleece and jersey
-                      </p>
                     </div>
                   </Link>
-
-                  {/* Brand Card */}
-                  <Link href="/brands" className="min-w-[12rem] sm:min-w-[14rem]">
-                    <div className="aspect-square sm:aspect-[4/3] bg-gradient-to-br from-[#D8D1C5] via-[#E5E1DA] to-[#F5F2EB] border border-[#D4CFC3]"></div>
-                    <div className="pt-4 space-y-1.5">
-                      <h3 className="text-sm sm:text-base font-medium tracking-tight uppercase text-[#1A1A1A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                        Probate Club
-                      </h3>
-                      <p className="text-xs text-[#7F786A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                        Varsity and outerwear
-                      </p>
-                    </div>
-                  </Link>
-
-                  {/* Brand Card */}
-                  <Link href="/brands" className="min-w-[12rem] sm:min-w-[14rem]">
-                    <div className="aspect-square sm:aspect-[4/3] bg-gradient-to-br from-[#D0C7B7] via-[#E5E1DA] to-[#F5F2EB] border border-[#D4CFC3]"></div>
-                    <div className="pt-4 space-y-1.5">
-                      <h3 className="text-sm sm:text-base font-medium tracking-tight uppercase text-[#1A1A1A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                        Bruhz Archive
-                      </h3>
-                      <p className="text-xs text-[#7F786A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                        Tees and campus staples
-                      </p>
-                    </div>
-                  </Link>
-
-                  {/* Brand Card */}
-                  <Link href="/brands" className="min-w-[12rem] sm:min-w-[14rem]">
-                    <div className="aspect-square sm:aspect-[4/3] bg-gradient-to-br from-[#D6CEC1] via-[#E5E1DA] to-[#F5F2EB] border border-[#D4CFC3]"></div>
-                    <div className="pt-4 space-y-1.5">
-                      <h3 className="text-sm sm:text-base font-medium tracking-tight uppercase text-[#1A1A1A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                        Yard Runners
-                      </h3>
-                      <p className="text-xs text-[#7F786A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                        Track and movement pieces
-                      </p>
-                    </div>
-                  </Link>
-                </div>
-              </div>
+                </>
+              )}
             </div>
+          </div>
+        </div>
       </section>
 
       {/* Collections */}

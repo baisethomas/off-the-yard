@@ -63,23 +63,23 @@ export default async function ShopPage() {
   // Fetch products server-side
   let products: Awaited<ReturnType<typeof getApprovedProducts>> = []
 
-  if (process.env.NODE_ENV === 'production' || process.env.ENABLE_DATA_FETCH === 'true') {
-    try {
-      const timeoutMs = 5000
-      const timeoutPromise = (label: string) =>
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`${label} timeout after ${timeoutMs}ms`)), timeoutMs)
-        )
+  try {
+    const timeoutMs = 10000 // Increased timeout for development
+    const timeoutPromise = (label: string) =>
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`${label} timeout after ${timeoutMs}ms`)), timeoutMs)
+      )
 
-      const productsResult = await Promise.race([
-        getApprovedProducts(100),
-        timeoutPromise('Products')
-      ])
+    const productsResult = await Promise.race([
+      getApprovedProducts(100),
+      timeoutPromise('Products')
+    ])
 
-      products = productsResult
-    } catch (error) {
-      console.warn('Error fetching products:', error)
-    }
+    products = productsResult
+    console.log(`[ShopPage] Fetched ${products.length} products`)
+  } catch (error) {
+    console.error('[ShopPage] Error fetching products:', error)
+    // Don't throw - just show empty state
   }
 
   // Serialize products to plain objects before passing to client component

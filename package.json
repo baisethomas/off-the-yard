@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "scrape": "tsx --tsconfig scripts/tsconfig.json scripts/scrape-brands.ts"
+    "scrape": "tsx --tsconfig scripts/tsconfig.json scripts/scrape-brands.ts",
+    "remove-duplicates": "tsx --tsconfig scripts/tsconfig.json scripts/remove-duplicates.ts"
   },
   "dependencies": {
     "firebase": "^10.7.0",

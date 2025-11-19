@@ -35,14 +35,14 @@ export interface Brand {
 
 export async function getApprovedProducts(limit: number = 12): Promise<(Product & { brandName?: string })[]> {
   try {
-    // Lazy initialization - only initialize when actually needed
     const adminDb = await getAdminDb()
 
-    // Check if adminDb is initialized
     if (!adminDb) {
-      console.warn('Firebase Admin not initialized, returning empty products array')
+      console.warn('[getApprovedProducts] Firebase Admin not initialized, returning empty products array')
       return []
     }
+    
+    console.log('[getApprovedProducts] Querying Firestore for approved products...')
     
     // Try to order by createdAt, but if that fails, just get approved products
     let productsSnapshot
@@ -53,13 +53,16 @@ export async function getApprovedProducts(limit: number = 12): Promise<(Product 
         .orderBy('createdAt', 'desc')
         .limit(limit)
         .get()
-    } catch (error) {
+      console.log(`[getApprovedProducts] Found ${productsSnapshot.size} products (with ordering)`)
+    } catch (error: any) {
+      console.warn('[getApprovedProducts] Ordering failed, trying without order:', error.message)
       // If ordering fails (e.g., no index), just get approved products
       productsSnapshot = await adminDb
         .collection('products')
         .where('approved', '==', true)
         .limit(limit)
         .get()
+      console.log(`[getApprovedProducts] Found ${productsSnapshot.size} products (without ordering)`)
     }
 
     const products: (Product & { brandName?: string })[] = []
@@ -92,6 +95,16 @@ export async function getApprovedProducts(limit: number = 12): Promise<(Product 
       } as Product & { brandName?: string })
     })
 
+    console.log(`[getApprovedProducts] Returning ${products.length} products with brand names`)
+    if (products.length > 0) {
+      console.log(`[getApprovedProducts] Sample product:`, {
+        id: products[0].id,
+        title: products[0].title,
+        brandName: products[0].brandName,
+        approved: products[0].approved
+      })
+    }
+
     return products
   } catch (error) {
     console.error('Error fetching products:', error)
@@ -101,10 +114,8 @@ export async function getApprovedProducts(limit: number = 12): Promise<(Product 
 
 export async function getVerifiedBrands(limit: number = 10): Promise<Brand[]> {
   try {
-    // Lazy initialization - only initialize when actually needed
     const adminDb = await getAdminDb()
 
-    // Check if adminDb is initialized
     if (!adminDb) {
       console.warn('Firebase Admin not initialized, returning empty brands array')
       return []

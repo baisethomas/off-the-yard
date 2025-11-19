@@ -411,27 +411,82 @@ async function scrapeBrand(brandConfig: typeof brands[0]) {
     const products = await extractProducts($, brandConfig.url, brandConfig.name, brandConfig.platform || 'shopify')
     console.log(`  ✓ Found ${products.length} products`)
     
-    const brandRef = db.collection('brands').doc()
-    const brandData: BrandData = {
-      name: brandConfig.name,
-      bio: brandConfig.bio,
-      logoUrl: logoUrl || '',
-      heroImageUrl: logoUrl || '',
-      verified: true,
-    }
+    // Check if brand already exists
+    const existingBrands = await db.collection('brands')
+      .where('name', '==', brandConfig.name)
+      .limit(1)
+      .get()
     
-    try {
+    let brandRef: admin.firestore.DocumentReference
+    let isNewBrand = false
+    
+    if (!existingBrands.empty) {
+      // Brand exists, update it
+      brandRef = existingBrands.docs[0].ref
+      const brandData: BrandData = {
+        name: brandConfig.name,
+        bio: brandConfig.bio,
+        logoUrl: logoUrl || '',
+        heroImageUrl: logoUrl || '',
+        verified: true,
+      }
+      
+      await brandRef.update({
+        ...brandData,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      })
+      console.log(`  ✓ Updated existing brand: ${brandRef.id}`)
+    } else {
+      // Brand doesn't exist, create it
+      brandRef = db.collection('brands').doc()
+      const brandData: BrandData = {
+        name: brandConfig.name,
+        bio: brandConfig.bio,
+        logoUrl: logoUrl || '',
+        heroImageUrl: logoUrl || '',
+        verified: true,
+      }
+      
       await brandRef.set({
         id: brandRef.id,
         ...brandData,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       })
-      
-      console.log(`  ✓ Created brand: ${brandRef.id}`)
-      
-      for (const product of products) {
-        try {
+      console.log(`  ✓ Created new brand: ${brandRef.id}`)
+      isNewBrand = true
+    }
+    
+    // Process products - check for existing ones by externalUrl
+    let createdCount = 0
+    let updatedCount = 0
+    
+    for (const product of products) {
+      try {
+        // Check if product already exists for this brand
+        // Note: This query may require a Firestore composite index on (brandId, externalUrl)
+        // If you get an error, follow the link in the error message to create the index
+        const existingProducts = await db.collection('products')
+          .where('brandId', '==', brandRef.id)
+          .where('externalUrl', '==', product.externalUrl)
+          .limit(1)
+          .get()
+        
+        if (!existingProducts.empty) {
+          // Product exists, update it
+          const productRef = existingProducts.docs[0].ref
+          await productRef.update({
+            title: product.title,
+            description: product.description,
+            imageUrl: product.imageUrl,
+            category: product.category,
+            tags: product.tags,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          })
+          console.log(`    ✓ Updated product: ${product.title}`)
+          updatedCount++
+        } else {
+          // Product doesn't exist, create it
           const productRef = db.collection('products').doc()
           await productRef.set({
             id: productRef.id,
@@ -442,15 +497,19 @@ async function scrapeBrand(brandConfig: typeof brands[0]) {
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           })
           console.log(`    ✓ Created product: ${product.title}`)
-        } catch (productError: any) {
-          console.error(`    ✗ Failed to create product ${product.title}:`, productError.message)
+          createdCount++
         }
+      } catch (productError: any) {
+        console.error(`    ✗ Failed to process product ${product.title}:`, productError.message)
       }
-      
-      return { brandId: brandRef.id, productsCount: products.length }
-    } catch (dbError: any) {
-      console.error(`  ✗ Database error for ${brandConfig.name}:`, dbError.message)
-      return { brandId: null, productsCount: products.length, error: dbError.message }
+    }
+    
+    return { 
+      brandId: brandRef.id, 
+      productsCount: products.length,
+      createdCount,
+      updatedCount,
+      isNewBrand 
     }
   } catch (error: any) {
     console.error(`  ✗ Error scraping ${brandConfig.name}:`, error.message)
@@ -480,7 +539,11 @@ async function main() {
     if (result.error) {
       console.log(`❌ ${result.brand}: ${result.error}`)
     } else if ('productsCount' in result) {
-      console.log(`✅ ${result.brand}: ${result.productsCount} products${result.brandId ? ` (Brand ID: ${result.brandId})` : ''}`)
+      const brandStatus = result.isNewBrand ? '🆕 Created' : '🔄 Updated'
+      const productInfo = result.createdCount > 0 || result.updatedCount > 0
+        ? ` (${result.createdCount} created, ${result.updatedCount} updated)`
+        : ` (${result.productsCount} total)`
+      console.log(`✅ ${result.brand}: ${brandStatus}${productInfo}${result.brandId ? ` | Brand ID: ${result.brandId}` : ''}`)
     }
   })
   
