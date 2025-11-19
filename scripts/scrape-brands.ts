@@ -479,7 +479,7 @@ async function main() {
   results.forEach((result) => {
     if (result.error) {
       console.log(`❌ ${result.brand}: ${result.error}`)
-    } else {
+    } else if ('productsCount' in result) {
       console.log(`✅ ${result.brand}: ${result.productsCount} products${result.brandId ? ` (Brand ID: ${result.brandId})` : ''}`)
     }
   })
