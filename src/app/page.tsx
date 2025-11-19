@@ -90,7 +90,7 @@ export default function HomePage() {
                             Capsule 014
                           </span>
                           <p className="text-xs sm:text-sm text-[#1A1A1A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
-                            Yard Gods "Line Crossing" set
+                            Yard Gods &quot;Line Crossing&quot; set
                           </p>
                         </div>
                         <button className="inline-flex items-center text-[0.65rem] sm:text-xs tracking-[0.26em] uppercase text-[#7F786A] hover:text-[#1A1A1A] transition-colors" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
