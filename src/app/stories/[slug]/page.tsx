@@ -33,7 +33,10 @@ export default async function StoryPage({ params }: { params: { slug: string } }
               </span>
               {story.publishedAt && (
                 <span className="text-[0.7rem] tracking-[0.18em] uppercase text-[#7F786A]" style={{ fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
-                  {new Date(story.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
+                  {(story.publishedAt instanceof Date 
+                    ? story.publishedAt 
+                    : (story.publishedAt as any)?.toDate?.() || new Date(story.publishedAt as any)
+                  ).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
                 </span>
               )}
             </div>

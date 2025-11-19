@@ -39,7 +39,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <h3 className="text-sm sm:text-base font-medium tracking-tight text-[#1A1A1A]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
           {product.title}
         </h3>
-        {product.brandName && (
+        {'brandName' in product && product.brandName && (
           <p className="text-sm text-[#4C4A45]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif" }}>
             {product.brandName}
           </p>
