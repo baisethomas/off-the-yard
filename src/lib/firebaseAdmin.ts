@@ -122,14 +122,23 @@ function initializeFirebaseAdmin() {
   }
 }
 
-// Initialize on module load
-initializeFirebaseAdmin()
+// Initialize on module load, but wrap in try-catch to prevent module load errors
+try {
+  initializeFirebaseAdmin()
+} catch (error) {
+  console.error('[Firebase Admin] Error during module initialization:', error)
+}
 
 export { adminAuth, adminDb }
 
 export async function getAdminDb(): Promise<Firestore | null> {
   if (!adminDb) {
-    initializeFirebaseAdmin()
+    try {
+      initializeFirebaseAdmin()
+    } catch (error) {
+      console.error('[Firebase Admin] Error during getAdminDb initialization:', error)
+      return null
+    }
   }
   return adminDb || null
 }

@@ -8,18 +8,24 @@ const oswald = Oswald({
   subsets: ['latin'],
   variable: '--font-oswald',
   weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  preload: true,
 })
 
 const ibmPlexMono = IBM_Plex_Mono({
   subsets: ['latin'],
   variable: '--font-ibm-plex-mono',
   weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  preload: true,
 })
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
   variable: '--font-plus-jakarta-sans',
   weight: ['300', '400', '500', '600', '700', '800'],
+  display: 'swap',
+  preload: false, // Disable preload for this font since it's not used immediately
 })
 
 export const metadata: Metadata = {

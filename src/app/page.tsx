@@ -13,15 +13,24 @@ export default async function HomePage() {
   try {
     // Fetch products and brands in parallel
     const [productsResult, brandsResult] = await Promise.all([
-      getApprovedProducts(8),
-      getVerifiedBrands(4),
+      getApprovedProducts(8).catch((err) => {
+        console.error('[HomePage] Error fetching products:', err)
+        return []
+      }),
+      getVerifiedBrands(4).catch((err) => {
+        console.error('[HomePage] Error fetching brands:', err)
+        return []
+      }),
     ])
-    products = productsResult
-    brands = brandsResult
+
+    products = productsResult || []
+    brands = brandsResult || []
     console.log(`[HomePage] Fetched ${products.length} products and ${brands.length} brands`)
   } catch (error) {
     console.error('[HomePage] Error fetching data:', error)
     // Continue with empty arrays - will show fallback content
+    products = []
+    brands = []
   }
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0">

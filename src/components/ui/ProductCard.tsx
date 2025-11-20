@@ -1,3 +1,5 @@
+'use client'
+
 import { Product } from '@/lib/products'
 
 // Flexible product type for display - only requires fields actually used by ProductCard
