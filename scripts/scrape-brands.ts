@@ -458,12 +458,24 @@ async function extractProducts($: cheerio.CheerioAPI, baseUrl: string, brandName
             src = new URL(src, baseUrl).href
           }
           
+          // Fix {width} placeholder FIRST - Shopify uses this template variable
+          // Replace {width} with 2048 for full-size images
+          // Handle patterns like _2048_{width}x or _{width}x
+          src = src.replace(/_2048_\{width\}x/i, '_2048x2048')
+          src = src.replace(/_\{width\}x/i, '_2048x')
+          src = src.replace(/\{width\}/g, '2048')
+          
           // For Shopify: get larger image size
           // Shopify URLs often have size parameters like ?v=123456 or _small.jpg, _medium.jpg, etc.
-          if (src.includes('cdn.shopify.com') || src.includes('shopify')) {
+          if (src.includes('cdn.shopify.com') || src.includes('shopify') || src.includes('westwardx.com/cdn/shop')) {
+            // Handle URLs with _2048_2048x pattern (after {width} replacement)
+            src = src.replace(/_2048_2048x/i, '_2048x2048')
+            src = src.replace(/_2048x/i, '_2048x2048')
+            
             // Remove size parameters and get full size
             src = src.replace(/_(small|medium|large|grande|1024x1024|2048x2048|master)\.(jpg|jpeg|png|webp)/i, '.$2')
             src = src.replace(/_(\d+x\d+)\.(jpg|jpeg|png|webp)/i, '_2048x2048.$2')
+            
             // Ensure we have a good size - try to get at least 800x800
             if (!src.includes('_') && !src.includes('?v=')) {
               // If no size info, try to add a size parameter
@@ -577,17 +589,36 @@ async function scrapeBrand(brandConfig: typeof brands[0]) {
     // Process products - check for existing ones by externalUrl
     let createdCount = 0
     let updatedCount = 0
+    let skippedCount = 0
     
     for (const product of products) {
       try {
-        // Check if product already exists for this brand
-        // Note: This query may require a Firestore composite index on (brandId, externalUrl)
-        // If you get an error, follow the link in the error message to create the index
-        const existingProducts = await db.collection('products')
-          .where('brandId', '==', brandRef.id)
-          .where('externalUrl', '==', product.externalUrl)
-          .limit(1)
-          .get()
+        // Normalize externalUrl for comparison (remove trailing slashes, query params, etc.)
+        const normalizedUrl = product.externalUrl.split('?')[0].replace(/\/$/, '')
+        
+        // Check if product already exists for this brand by externalUrl
+        let existingProducts
+        try {
+          existingProducts = await db.collection('products')
+            .where('brandId', '==', brandRef.id)
+            .where('externalUrl', '==', normalizedUrl)
+            .limit(1)
+            .get()
+        } catch (indexError: any) {
+          // If composite index doesn't exist, try alternative approach
+          console.log(`    ⚠️  Composite index may be needed, trying alternative lookup...`)
+          const allBrandProducts = await db.collection('products')
+            .where('brandId', '==', brandRef.id)
+            .get()
+          
+          const matching = allBrandProducts.docs.find(doc => {
+            const data = doc.data()
+            const existingUrl = (data.externalUrl || '').split('?')[0].replace(/\/$/, '')
+            return existingUrl === normalizedUrl
+          })
+          
+          existingProducts = matching ? { empty: false, docs: [{ ref: matching.ref }] } : { empty: true, docs: [] }
+        }
         
         if (!existingProducts.empty) {
           // Product exists, update it
@@ -595,7 +626,7 @@ async function scrapeBrand(brandConfig: typeof brands[0]) {
           await productRef.update({
             title: product.title,
             description: product.description,
-            imageUrl: product.imageUrl,
+            imageUrl: product.imageUrl, // Update image URL in case it was fixed
             category: product.category,
             tags: product.tags,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -603,12 +634,26 @@ async function scrapeBrand(brandConfig: typeof brands[0]) {
           console.log(`    ✓ Updated product: ${product.title}`)
           updatedCount++
         } else {
+          // Also check by title to avoid duplicates with different URLs
+          const titleMatch = await db.collection('products')
+            .where('brandId', '==', brandRef.id)
+            .where('title', '==', product.title)
+            .limit(1)
+            .get()
+          
+          if (!titleMatch.empty) {
+            console.log(`    ⊘ Skipped duplicate (by title): ${product.title}`)
+            skippedCount++
+            continue
+          }
+          
           // Product doesn't exist, create it
           const productRef = db.collection('products').doc()
           await productRef.set({
             id: productRef.id,
             brandId: brandRef.id,
             ...product,
+            externalUrl: normalizedUrl, // Use normalized URL
             approved: true,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -626,6 +671,7 @@ async function scrapeBrand(brandConfig: typeof brands[0]) {
       productsCount: products.length,
       createdCount,
       updatedCount,
+      skippedCount: skippedCount || 0,
       isNewBrand 
     }
   } catch (error: any) {
@@ -657,8 +703,9 @@ async function main() {
       console.log(`❌ ${result.brand}: ${result.error}`)
     } else if ('productsCount' in result) {
       const brandStatus = result.isNewBrand ? '🆕 Created' : '🔄 Updated'
+      const skippedInfo = result.skippedCount > 0 ? `, ${result.skippedCount} skipped` : ''
       const productInfo = result.createdCount > 0 || result.updatedCount > 0
-        ? ` (${result.createdCount} created, ${result.updatedCount} updated)`
+        ? ` (${result.createdCount} created, ${result.updatedCount} updated${skippedInfo})`
         : ` (${result.productsCount} total)`
       console.log(`✅ ${result.brand}: ${brandStatus}${productInfo}${result.brandId ? ` | Brand ID: ${result.brandId}` : ''}`)
     }
