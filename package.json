@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "scrape": "tsx --tsconfig scripts/tsconfig.json scripts/scrape-brands.ts",
-    "remove-duplicates": "tsx --tsconfig scripts/tsconfig.json scripts/remove-duplicates.ts"
+    "remove-duplicates": "tsx --tsconfig scripts/tsconfig.json scripts/remove-duplicates.ts",
+    "extract-key": "tsx --tsconfig scripts/tsconfig.json scripts/extract-private-key.ts",
+    "create-stories": "tsx --tsconfig scripts/tsconfig.json scripts/create-stories.ts"
   },
   "dependencies": {
     "firebase": "^10.7.0",

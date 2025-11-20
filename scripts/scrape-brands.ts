@@ -422,8 +422,15 @@ async function extractProducts($: cheerio.CheerioAPI, baseUrl: string, brandName
     
     const imgSelectors = [
       'img[data-product-image]',
+      'img[data-product-id]',
       '.product-image img',
+      '.product-card-image img',
+      '.product__image img',
+      '.product-item-image img',
       'img[src*="products"]',
+      'img[src*="product"]',
+      'img[src*="cdn.shopify"]', // Shopify CDN
+      'img[src*="squarespace"]', // Squarespace CDN
       'img',
     ]
     
@@ -431,8 +438,18 @@ async function extractProducts($: cheerio.CheerioAPI, baseUrl: string, brandName
     for (const selector of imgSelectors) {
       const imgEl = $el.find(selector).first()
       if (imgEl.length) {
-        let src = imgEl.attr('src') || imgEl.attr('data-src') || imgEl.attr('data-lazy-src') || imgEl.attr('data-original')
+        // Try multiple attributes for lazy-loaded images
+        let src = imgEl.attr('src') || 
+                  imgEl.attr('data-src') || 
+                  imgEl.attr('data-lazy-src') || 
+                  imgEl.attr('data-original') ||
+                  imgEl.attr('data-image') ||
+                  imgEl.attr('data-product-image') ||
+                  imgEl.attr('srcset')?.split(',')[0]?.trim().split(' ')[0] // Get first srcset URL
         if (src) {
+          // Clean up srcset URLs
+          src = src.split(' ')[0].trim()
+          
           if (src.startsWith('//')) {
             src = 'https:' + src
           } else if (src.startsWith('/')) {
@@ -440,12 +457,46 @@ async function extractProducts($: cheerio.CheerioAPI, baseUrl: string, brandName
           } else if (!src.startsWith('http')) {
             src = new URL(src, baseUrl).href
           }
-          src = src.replace(/_(small|medium|large|grande|1024x1024|2048x2048)\./, '.')
-          src = src.replace(/_(\d+x\d+)\./, '_1024x1024.')
+          
+          // For Shopify: get larger image size
+          // Shopify URLs often have size parameters like ?v=123456 or _small.jpg, _medium.jpg, etc.
+          if (src.includes('cdn.shopify.com') || src.includes('shopify')) {
+            // Remove size parameters and get full size
+            src = src.replace(/_(small|medium|large|grande|1024x1024|2048x2048|master)\.(jpg|jpeg|png|webp)/i, '.$2')
+            src = src.replace(/_(\d+x\d+)\.(jpg|jpeg|png|webp)/i, '_2048x2048.$2')
+            // Ensure we have a good size - try to get at least 800x800
+            if (!src.includes('_') && !src.includes('?v=')) {
+              // If no size info, try to add a size parameter
+              const ext = src.match(/\.(jpg|jpeg|png|webp)/i)?.[1] || 'jpg'
+              src = src.replace(/\.(jpg|jpeg|png|webp)/i, `_2048x2048.${ext}`)
+            }
+          }
+          
+          // For Squarespace: ensure we get full-size image
+          if (src.includes('squarespace-cdn.com')) {
+            // Squarespace URLs often have ?format=1500w or similar
+            if (!src.includes('format=')) {
+              src = src.split('?')[0] + '?format=1500w'
+            } else {
+              // Replace with larger format
+              src = src.replace(/format=\d+w/, 'format=1500w')
+            }
+          }
+          
+          // Skip placeholder/empty images
+          if (src.includes('placeholder') || src.includes('no-image') || src.includes('blank')) {
+            continue
+          }
+          
           imageUrl = src
+          console.log(`      Image found: ${imageUrl.substring(0, 80)}...`)
           break
         }
       }
+    }
+    
+    if (!imageUrl && title) {
+      console.log(`      ⚠️  No image found for: ${title}`)
     }
     
     if (title && imageUrl && productUrl) {

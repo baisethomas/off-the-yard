@@ -25,6 +25,20 @@ export function ProductCard({ product }: ProductCardProps) {
               src={product.imageUrl} 
               alt={product.title}
               className="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-[1.02]"
+              onError={(e) => {
+                // Fallback to placeholder if image fails to load
+                const target = e.target as HTMLImageElement
+                target.style.display = 'none'
+                const parent = target.parentElement
+                if (parent) {
+                  parent.innerHTML = `
+                    <div class="h-full w-full flex items-center justify-center">
+                      <span class="text-xs text-[#7F786A]">Image unavailable</span>
+                    </div>
+                  `
+                }
+              }}
+              loading="lazy"
             />
           ) : (
             <div className="h-full w-full transform transition-transform duration-300 group-hover:scale-[1.02] flex items-end justify-between p-4">
