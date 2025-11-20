@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ProductCard } from '@/components/ui/ProductCard'
 import { getApprovedProducts, getVerifiedBrands } from '@/lib/products'
+import { serializeProduct, serializeBrand } from '@/lib/serialize'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 60
@@ -32,6 +33,10 @@ export default async function HomePage() {
     products = []
     brands = []
   }
+
+  // Serialize data before passing to Client Components
+  const serializedProducts = products.map(serializeProduct)
+  const serializedBrands = brands.map(serializeBrand)
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0">
       {/* Hero */}
@@ -154,8 +159,8 @@ export default async function HomePage() {
 
         {/* Product Card Grid */}
         <div className="grid gap-6 sm:gap-7 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {products.length > 0 ? (
-            products.map((product) => (
+          {serializedProducts.length > 0 ? (
+            serializedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))
           ) : (
@@ -190,8 +195,8 @@ export default async function HomePage() {
           {/* Horizontal Scroll */}
           <div className="overflow-x-auto">
             <div className="flex gap-6 sm:gap-8 pr-6 sm:pr-10">
-              {brands.length > 0 ? (
-                brands.map((brand) => (
+              {serializedBrands.length > 0 ? (
+                serializedBrands.map((brand) => (
                   <Link key={brand.id} href={`/brands/${brand.id}`} className="min-w-[12rem] sm:min-w-[14rem]">
                     <div className="aspect-square sm:aspect-[4/3] bg-gradient-to-br from-[#D4CEC0] via-[#E5E1DA] to-[#F5F2EB] border border-[#D4CFC3] relative overflow-hidden">
                       {brand.logoUrl && (

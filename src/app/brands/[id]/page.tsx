@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getBrandById, getProductsByBrandId } from '@/lib/products'
 import { ProductCard } from '@/components/ui/ProductCard'
+import { serializeProduct } from '@/lib/serialize'
 
 export const revalidate = 60
 
@@ -13,6 +14,9 @@ export default async function BrandPage({ params }: { params: { id: string } }) 
   }
 
   const products = await getProductsByBrandId(params.id)
+  
+  // Serialize products before passing to Client Components
+  const serializedProducts = products.map(serializeProduct)
 
   return (
     <div className="bg-[#E5E1DA] text-[#1A1A1A] min-h-screen">
@@ -98,9 +102,9 @@ export default async function BrandPage({ params }: { params: { id: string } }) 
             </h2>
           </div>
 
-          {products.length > 0 ? (
+          {serializedProducts.length > 0 ? (
             <div className="grid gap-6 sm:gap-7 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {products.map((product) => (
+              {serializedProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
