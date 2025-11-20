@@ -299,7 +299,7 @@ async function extractProducts($: cheerio.CheerioAPI, baseUrl: string, brandName
   const seenTitles = new Set<string>()
   const seenUrls = new Set<string>()
   let count = 0
-  const maxProducts = 5
+  const maxProducts = 20 // Increased from 5 to get more products per brand
   
   productElements.each((_, element) => {
     if (count >= maxProducts) return false
