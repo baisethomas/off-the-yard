@@ -238,7 +238,7 @@ async function extractProducts($: cheerio.CheerioAPI, baseUrl: string, brandName
       }
     }
   } else {
-    // Shopify product selectors
+    // Shopify product selectors - more comprehensive list
     const shopifySelectors = [
       '.product-item',
       '.product-card',
@@ -247,6 +247,14 @@ async function extractProducts($: cheerio.CheerioAPI, baseUrl: string, brandName
       '.grid-product',
       '.product-tile',
       '.product-block',
+      '.product-wrapper',
+      '.product-grid-item',
+      '.collection-product',
+      '[class*="product-item"]',
+      '[class*="product-card"]',
+      '[class*="product-tile"]',
+      'article[class*="product"]',
+      'div[class*="product"]',
       '[class*="product"]',
     ]
     
@@ -254,16 +262,36 @@ async function extractProducts($: cheerio.CheerioAPI, baseUrl: string, brandName
       const found = $(selector)
       if (found.length > 0) {
         productElements = found
-        console.log(`    Found products using Shopify selector: ${selector}`)
+        console.log(`    Found ${found.length} products using Shopify selector: ${selector}`)
         break
       }
     }
     
+    // Try finding products via links to product pages
     if (productElements.length === 0) {
       const productLinks = $('a[href*="/products/"]')
       if (productLinks.length > 0) {
-        productElements = productLinks.parent()
-        console.log(`    Found products via Shopify product links`)
+        // Try to find parent containers
+        const parents = productLinks.map((_, el) => {
+          const $link = $(el)
+          const parent = $link.closest('.product-item, .product-card, .product, .grid-item, article, [class*="product"]').first()
+          return parent.length ? parent[0] : $link.parent()[0]
+        })
+        productElements = $(parents.toArray())
+        console.log(`    Found ${productElements.length} products via Shopify product links`)
+      }
+    }
+    
+    // Last resort: find any element containing a product link
+    if (productElements.length === 0) {
+      const productLinks = $('a[href*="/products/"]')
+      if (productLinks.length > 0) {
+        productElements = productLinks.closest('div, article, li, section').filter((_, el) => {
+          const $el = $(el)
+          return $el.find('a[href*="/products/"]').length > 0 && 
+                 ($el.find('img').length > 0 || $el.text().trim().length > 10)
+        })
+        console.log(`    Found ${productElements.length} products via product link containers`)
       }
     }
   }
@@ -318,9 +346,13 @@ async function extractProducts($: cheerio.CheerioAPI, baseUrl: string, brandName
       'h3 a',
       'h2',
       'h3',
+      'h4',
       '[data-product-title]',
       '.card-title',
+      '.title',
+      '[class*="title"]',
       'a',
+      'span[class*="title"]',
     ]
     
     let title = ''
@@ -328,8 +360,31 @@ async function extractProducts($: cheerio.CheerioAPI, baseUrl: string, brandName
       const titleEl = $el.find(selector).first()
       if (titleEl.length) {
         title = titleEl.text().trim()
-        if (title && title.length > 3 && title.length < 100) break
+        // Clean up title - remove extra whitespace and newlines
+        title = title.replace(/\s+/g, ' ').replace(/\n+/g, ' ').trim()
+        if (title && title.length > 3 && title.length < 200) break
       }
+    }
+    
+    // If still no title, try getting text from the element itself
+    if (!title || title.length < 3) {
+      const elementText = $el.text().trim()
+      if (elementText && elementText.length > 3 && elementText.length < 200) {
+        // Take first line or first meaningful text
+        const lines = elementText.split('\n').map(l => l.trim()).filter(l => l.length > 3)
+        if (lines.length > 0) {
+          title = lines[0]
+        }
+      }
+    }
+    
+    // Clean up title one more time before using
+    if (title) {
+      title = title.replace(/\s+/g, ' ').replace(/\n+/g, ' ').trim()
+      // Remove common unwanted prefixes/suffixes
+      title = title.replace(/^(Quick View|View|Shop|Buy)\s*/i, '')
+      title = title.replace(/\s*(Quick View|View|Shop|Buy)$/i, '')
+      title = title.trim()
     }
     
     if (!title && productUrl) {
@@ -351,7 +406,18 @@ async function extractProducts($: cheerio.CheerioAPI, baseUrl: string, brandName
       }
     }
     
-    if (!title || seenTitles.has(title)) return
+    // Clean up title - remove extra whitespace, newlines, and unwanted text
+    if (title) {
+      title = title.replace(/\s+/g, ' ').replace(/\n+/g, ' ').trim()
+      // Remove common unwanted prefixes/suffixes
+      title = title.replace(/^(Quick View|View|Shop|Buy|Link out)\s*/i, '')
+      title = title.replace(/\s*(Quick View|View|Shop|Buy|Link out)$/i, '')
+      // Remove price patterns if they got included
+      title = title.replace(/\$\d+\.?\d*/g, '').trim()
+      title = title.trim()
+    }
+    
+    if (!title || title.length < 3 || seenTitles.has(title)) return
     seenTitles.add(title)
     
     const imgSelectors = [
